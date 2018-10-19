@@ -246,7 +246,7 @@ public class LogAnalyzer
             for (String[] productID : purchased) {
                int timesViewed = 0;
                for (List<View> views : viewsFromSession.values()) {
-                  boolean breaker = false;
+
                   for (View view : views)
                   {
 
@@ -260,6 +260,7 @@ public class LogAnalyzer
                   }
 
                }
+               System.out.print("\t"+productID[0]+": ");
                System.out.println(timesViewed);
             }
          }
@@ -278,7 +279,7 @@ public class LogAnalyzer
       printSessionPriceDifference(sessionsFromCustomer, viewsFromSession, buysFromSession);
       printCustomerItemViewsForPurchase( sessionsFromCustomer, viewsFromSession, buysFromSession);
 
-      printOutExample(sessionsFromCustomer, viewsFromSession, buysFromSession);
+//      printOutExample(sessionsFromCustomer, viewsFromSession, buysFromSession);
 
       /* This is commented out as it will not work until you read
          in your data to appropriate data structures, but is included
@@ -316,31 +317,31 @@ public class LogAnalyzer
       System.out.println("Average Views without Purchase: "+ totalViews/totalSessions);
    }
 
-   private static void printOutExample(
-      final Map<String, List<String>> sessionsFromCustomer,
-      final Map<String, List<View>> viewsFromSession,
-      final Map<String, List<Buy>> buysFromSession)
-   {
-      //for each customer, get their sessions
-      //for each session compute views
-      for(Map.Entry<String, List<String>> entry:
-         sessionsFromCustomer.entrySet())
-      {
-         System.out.println(entry.getKey());
-         List<String> sessions = entry.getValue();
-         for(String sessionID : sessions)
-         {
-            System.out.println("\tin " + sessionID);
-            List<View> theViews = viewsFromSession.get(sessionID);
-            if (theViews != null)
-            {
-               for (View thisView : theViews) {
-                  System.out.println("\t\tviewed " + thisView.getProduct());
-               }
-            }
-         }
-      }
-   }
+//   private static void printOutExample(
+//      final Map<String, List<String>> sessionsFromCustomer,
+//      final Map<String, List<View>> viewsFromSession,
+//      final Map<String, List<Buy>> buysFromSession)
+//   {
+//      //for each customer, get their sessions
+//      //for each session compute views
+//      for(Map.Entry<String, List<String>> entry:
+//         sessionsFromCustomer.entrySet())
+//      {
+//         System.out.println(entry.getKey());
+//         List<String> sessions = entry.getValue();
+//         for(String sessionID : sessions)
+//         {
+//            System.out.println("\tin " + sessionID);
+//            List<View> theViews = viewsFromSession.get(sessionID);
+//            if (theViews != null)
+//            {
+//               for (View thisView : theViews) {
+//                  System.out.println("\t\tviewed " + thisView.getProduct());
+//               }
+//            }
+//         }
+//      }
+//   }
 
 
       //called in populateDataStructures
