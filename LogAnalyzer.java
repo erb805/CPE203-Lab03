@@ -218,8 +218,53 @@ public class LogAnalyzer
    {
       System.out.println("Number of Views for Purchased Product by Customer");
 
+      //iterating through the list of session ID's for each customer
+      for (String customerKey : sessionsFromCustomer.keySet())
+      {
+         List<String> sessionIDs = sessionsFromCustomer.get(customerKey);
+         //create a list of all purchased item's product ID's
+         List<String[]> purchased = new ArrayList<>();
 
-   }
+         //iterating through the session ids in each list
+         for (String sessionID : sessionIDs) {
+
+            //if the item was bought, add it's product id to the list
+            if (buysFromSession.get(sessionID) != null) {
+               for (Buy buy : buysFromSession.get(sessionID)) {
+                  if (!(purchased.contains(buy.getProductID()))) {
+                     String[] temp = {buy.getProductID(), buy.getSessionID()};
+                     purchased.add(temp);
+                  }
+               }
+            }
+
+         }
+            //now we have a list of every item's ProductID purchased by each customer
+            //lets count up how many sessions each item was viewed in
+            System.out.println(customerKey);
+
+            for (String[] productID : purchased) {
+               int timesViewed = 0;
+               for (List<View> views : viewsFromSession.values()) {
+                  boolean breaker = false;
+                  for (View view : views)
+                  {
+
+                     if (view.getProduct().equals(productID[0]) && sessionsFromCustomer.get(customerKey).contains(view.getSessionID())) {
+
+                        timesViewed += 1;
+                        //this ensures we will not count multiple views in the same session
+                        break;
+                     }
+
+                  }
+
+               }
+               System.out.println(timesViewed);
+            }
+         }
+      }
+
 
       //write this after you have figured out how to store your data
       //make sure that you understand the problem
@@ -229,6 +274,7 @@ public class LogAnalyzer
            final Map<String, List<Buy>> buysFromSession)
 
    {
+      printAverageViewsWithoutPurchase(sessionsFromCustomer, viewsFromSession, buysFromSession);
       printSessionPriceDifference(sessionsFromCustomer, viewsFromSession, buysFromSession);
       printCustomerItemViewsForPurchase( sessionsFromCustomer, viewsFromSession, buysFromSession);
 
@@ -246,6 +292,29 @@ public class LogAnalyzer
    /* provided as an example of a method that might traverse your
       collections of data once they are written 
       commented out as the classes do not exist yet - write them! */
+
+   private static void printAverageViewsWithoutPurchase(
+           final Map<String, List<String>> sessionsFromCustomer,
+           final Map<String, List<View>> viewsFromSession,
+           final Map<String, List<Buy>> buysFromSession)
+   {
+      double totalViews = 0.0;
+      double totalSessions = 0.0;
+      for (String sessionID : viewsFromSession.keySet())
+      {
+         //check to see if the session contained a purchase, if so, do not continue
+         if (!(buysFromSession.containsKey(sessionID)))
+         {
+            for ( View view : viewsFromSession.get(sessionID))
+            {
+               totalViews += 1;
+            }
+            totalSessions += 1;
+         }
+
+      }
+      System.out.println("Average Views without Purchase: "+ totalViews/totalSessions);
+   }
 
    private static void printOutExample(
       final Map<String, List<String>> sessionsFromCustomer,
