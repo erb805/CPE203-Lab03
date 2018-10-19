@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.ArrayList;
 
 public class LogAnalyzer
 {
@@ -54,23 +55,85 @@ public class LogAnalyzer
       sessions.add(words[START_SESSION_ID]);
    }
 
+
       //similar to processStartEntry, should store relevant view
       //data in a map - model on processStartEntry, but store
       //your data to represent a view in the map (not a list of strings)
-   private static void processViewEntry(final String[] words
+   private static void processViewEntry( final String[] words,
+                                        final Map<String, List<View>> viewsFromSession
       /* add parameters as needed */
       )
    {
+      if (words.length != VIEW_NUM_FIELDS)
+      {
+         return;
+      }
+
+      //check if there already is a list entry in the map
+      //for this customer, if not create one
+      List<View> views = viewsFromSession
+              .get(words[VIEW_SESSION_ID]);
+      if (views == null)
+      {
+         views = new LinkedList<>();
+         viewsFromSession.put(words[VIEW_SESSION_ID], views);
+      }
+
+      //now that we know there is a list, add the current session
+      views.add(new View(words[VIEW_SESSION_ID], words[VIEW_PRODUCT_ID],
+              Integer.parseInt(words[VIEW_PRICE])));
+
    }
 
       //similar to processStartEntry, should store relevant purchases
       //data in a map - model on processStartEntry, but store
       //your data to represent a purchase in the map (not a list of strings)
    private static void processBuyEntry(
-      final String[] words
-      /* add parameters as needed */
+      final String[] words, final Map<String, List<Buy>> buysFromSession
+
       )
    {
+      if (words.length != BUY_NUM_FIELDS)
+      {
+         return;
+      }
+
+      //check if there already is a list entry in the map
+      //for this customer, if not create one
+      List<Buy> buys = buysFromSession
+              .get(words[BUY_SESSION_ID]);
+      if (buys == null)
+      {
+         buys = new LinkedList<>();
+         buysFromSession.put(words[BUY_SESSION_ID],  buys);
+      }
+
+      //now that we know there is a list, add the current session
+
+      //convert the Strings to ints
+//      int buySessionID = 0;
+//      String newBuySessionID = "";
+//      int buyProductID;
+//      String newBuyProductID = "";
+//      int buyPrice;
+//      String newBuyPrice = "";
+//      int buyQuantity;
+//      String newBuyQuantity = "";
+//
+//      //convert Session ID from String to Int:
+//      for (int i = 0; i < words[BUY_SESSION_ID].length(); i ++)
+//      {
+//         if (Character.isDigit(words[BUY_SESSION_ID].charAt(i)))
+//         {
+//            newBuySessionID += words[BUY_SESSION_ID].charAt(i);
+//         }
+//      }
+//      buySessionID = Integer.parseInt(newBuySessionID);
+
+      buys.add(new Buy(words[BUY_PRODUCT_ID], words[BUY_PRODUCT_ID],
+              Integer.parseInt(words[BUY_PRICE]), Integer.parseInt(words[BUY_QUANTITY])));
+
+
    }
 
    private static void processEndEntry(final String[] words)
@@ -85,7 +148,8 @@ public class LogAnalyzer
       //to process the data using the methods you write above
    private static void processLine(
       final String line,
-      final Map<String, List<String>> sessionsFromCustomer
+      final Map<String, List<String>> sessionsFromCustomer, final Map<String, List<View>> viewsFromSession,
+      final Map<String, List<Buy>> buysFromSession
       /* add parameters as needed */
       )
    {
@@ -102,10 +166,10 @@ public class LogAnalyzer
             processStartEntry(words, sessionsFromCustomer);
             break;
          case VIEW_TAG:
-            processViewEntry(words /* add arguments as needed */ );
+            processViewEntry(words, viewsFromSession  /* add arguments as needed */ );
             break;
          case BUY_TAG:
-            processBuyEntry(words /* add arguments as needed */ );
+            processBuyEntry(words, buysFromSession /* add arguments as needed */ );
             break;
          case END_TAG:
             processEndEntry(words /* add arguments as needed */ );
@@ -115,34 +179,60 @@ public class LogAnalyzer
 
       //write this after you have figured out how to store your data
       //make sure that you understand the problem
-   private static void printSessionPriceDifference(
-      /* add parameters as needed */
-      )
+   private static void printSessionPriceDifference(final Map<String, List<String>> sessionsFromCustomer, final Map<String, List<View>> viewsFromSession,
+                                                   final Map<String, List<Buy>> buysFromSession)
+   //the purchase price (as cents) minus the average price of the items viewed during that session
    {
       System.out.println("Price Difference for Purchased Product by Session");
+      List<String> SessonIDs = new ArrayList<>();
 
-      /* add printing */
+      //this will iterate through a list of buy session ID's
+      for (String buyID : buysFromSession.keySet())
+      {
+         //this will iterate through the views and get an average view price for given buyID
+         double totalViewPrice = 0.0;
+         System.out.println(buyID);
+         for (View view : viewsFromSession.get(buyID))
+         {
+            totalViewPrice += view.getPrice();
+         }
+         double aveViewPrice = totalViewPrice/viewsFromSession.get(buyID).size();
+
+         //this will print the difference for each item in a session:
+         for (Buy buy : buysFromSession.get(buyID))
+         {
+            System.out.print("\t");
+            System.out.print(buy.getProductID() + " ");
+            System.out.println(buy.getPrice() - aveViewPrice);
+         }
+      }
    }
 
       //write this after you have figured out how to store your data
       //make sure that you understand the problem
    private static void printCustomerItemViewsForPurchase(
-      /* add parameters as needed */
+           final Map<String, List<String>> sessionsFromCustomer,
+           final Map<String, List<View>> viewsFromSession,
+           final Map<String, List<Buy>> buysFromSession
       )
    {
       System.out.println("Number of Views for Purchased Product by Customer");
 
-      /* add printing */
+
    }
 
       //write this after you have figured out how to store your data
       //make sure that you understand the problem
    private static void printStatistics(
-      /* add parameters as needed */
-      )
+           final Map<String, List<String>> sessionsFromCustomer,
+           final Map<String, List<View>> viewsFromSession,
+           final Map<String, List<Buy>> buysFromSession)
+
    {
-      printSessionPriceDifference( /*add arguments as needed */);
-      printCustomerItemViewsForPurchase( /*add arguments as needed */);
+      printSessionPriceDifference(sessionsFromCustomer, viewsFromSession, buysFromSession);
+      printCustomerItemViewsForPurchase( sessionsFromCustomer, viewsFromSession, buysFromSession);
+
+      printOutExample(sessionsFromCustomer, viewsFromSession, buysFromSession);
 
       /* This is commented out as it will not work until you read
          in your data to appropriate data structures, but is included
@@ -156,16 +246,16 @@ public class LogAnalyzer
    /* provided as an example of a method that might traverse your
       collections of data once they are written 
       commented out as the classes do not exist yet - write them! */
-/*
+
    private static void printOutExample(
       final Map<String, List<String>> sessionsFromCustomer,
       final Map<String, List<View>> viewsFromSession,
-      final Map<String, List<Buy>> buysFromSession) 
+      final Map<String, List<Buy>> buysFromSession)
    {
       //for each customer, get their sessions
       //for each session compute views
-      for(Map.Entry<String, List<String>> entry: 
-         sessionsFromCustomer.entrySet()) 
+      for(Map.Entry<String, List<String>> entry:
+         sessionsFromCustomer.entrySet())
       {
          System.out.println(entry.getKey());
          List<String> sessions = entry.getValue();
@@ -173,25 +263,30 @@ public class LogAnalyzer
          {
             System.out.println("\tin " + sessionID);
             List<View> theViews = viewsFromSession.get(sessionID);
-            for (View thisView: theViews)
+            if (theViews != null)
             {
-               System.out.println("\t\tviewed " + thisView.getProduct());
+               for (View thisView : theViews) {
+                  System.out.println("\t\tviewed " + thisView.getProduct());
+               }
             }
          }
       }
    }
-*/
+
 
       //called in populateDataStructures
    private static void processFile(
       final Scanner input,
-      final Map<String, List<String>> sessionsFromCustomer
+      final Map<String, List<String>> sessionsFromCustomer,
+      final Map<String, List<View>> viewsFromSession,
+      final Map<String, List<Buy>> buysFromSession
+
       /* add parameters as needed */
       )
    {
       while (input.hasNextLine())
       {
-         processLine(input.nextLine(), sessionsFromCustomer
+         processLine(input.nextLine(), sessionsFromCustomer, viewsFromSession, buysFromSession
             /* add arguments as needed */ );
       }
    }
@@ -199,14 +294,16 @@ public class LogAnalyzer
       //called from main - mostly just pass through important data structures	
    private static void populateDataStructures(
       final String filename,
-      final Map<String, List<String>> sessionsFromCustomer
+      final Map<String, List<String>> sessionsFromCustomer,
+      final Map<String, List<View>> viewsFromSession,
+      final Map<String, List<Buy>> buysFromSession
       /* add parameters as needed */
       )
       throws FileNotFoundException
    {
       try (Scanner input = new Scanner(new File(filename)))
       {
-         processFile(input, sessionsFromCustomer
+         processFile(input, sessionsFromCustomer, viewsFromSession, buysFromSession
             /* add arguments as needed */ );
       }
    }
@@ -228,6 +325,8 @@ public class LogAnalyzer
        * that customer.
        */
       final Map<String, List<String>> sessionsFromCustomer = new HashMap<>();
+      final Map<String, List<View>> viewsFromSession = new HashMap<>();
+      final Map<String, List<Buy>> buysFromSession = new HashMap<>();
 
       /* create additional data structures to hold relevant information */
       /* they will most likely be maps to important data in the logs */
@@ -236,12 +335,12 @@ public class LogAnalyzer
 
       try
       {
-         populateDataStructures(filename, sessionsFromCustomer
+         populateDataStructures(filename, sessionsFromCustomer,
+            viewsFromSession,
+            buysFromSession
             /* add parameters as needed */
             );
-         printStatistics(
-            /* add parameters as needed */
-            );
+         printStatistics(sessionsFromCustomer, viewsFromSession, buysFromSession);
       }
       catch (FileNotFoundException e)
       {
