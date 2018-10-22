@@ -230,7 +230,9 @@ public class LogAnalyzer
 
             //if the item was bought, add it's product id to the list
             if (buysFromSession.get(sessionID) != null) {
+
                for (Buy buy : buysFromSession.get(sessionID)) {
+                  //if purchased already has this session id, dont add it
                   if (!(purchased.contains(buy.getProductID()))) {
                      String[] temp = {buy.getProductID(), buy.getSessionID()};
                      purchased.add(temp);
@@ -301,14 +303,25 @@ public class LogAnalyzer
    {
       double totalViews = 0.0;
       double totalSessions = 0.0;
-      for (String sessionID : viewsFromSession.keySet())
+      List<String> allSessions = new ArrayList<>();
+      for (List<String> viewList : sessionsFromCustomer.values())
+      {
+         for (String session : viewList)
+         {
+            if (!(allSessions.contains(session)))
+            {
+               allSessions.add(session);
+            }
+         }
+      }
+      for (String sessionID : allSessions)
       {
          //check to see if the session contained a purchase, if so, do not continue
          if (!(buysFromSession.containsKey(sessionID)))
          {
-            for ( View view : viewsFromSession.get(sessionID))
+            if (viewsFromSession.containsKey(sessionID))
             {
-               totalViews += 1;
+               totalViews += viewsFromSession.get(sessionID).size();
             }
             totalSessions += 1;
          }
